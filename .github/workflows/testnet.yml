@@ -1,0 +1,23 @@
+name: TestNet integration
+
+# Spends a little test ALGO, so it runs on release tags and on demand, not on every push.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  testnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Anchor and verify on TestNet
+        run: npm run test:testnet
+        env:
+          # secrets., never vars.: a wrong context is an empty string with no error, and the suite fails loudly on empty.
+          ANCHOR_TEST_MNEMONIC: ${{ secrets.ANCHOR_TEST_MNEMONIC }}
